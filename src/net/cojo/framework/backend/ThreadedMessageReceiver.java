@@ -1,6 +1,8 @@
 package net.cojo.framework.backend;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import net.cojo.framework.network.Network;
 
@@ -10,8 +12,9 @@ public class ThreadedMessageReceiver extends Thread {
 	
 	private BufferedReader reader;
 	
-	public ThreadedMessageReceiver(Network network) {
+	public ThreadedMessageReceiver(Network network) throws IOException {
 		super ("Msg Receiver: " + network.getName());
+		reader = new BufferedReader(new InputStreamReader(network.getSocketIStream()));
 	}
 	
 	@Override
