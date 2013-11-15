@@ -3,7 +3,7 @@ package net.cojo.framework.backend;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class MessageManager {
+public class MessageDispatcher {
 
 	/**
 	 * Concurrent data structure to map a network id to a queue of messages associated with it, not sure whether this is

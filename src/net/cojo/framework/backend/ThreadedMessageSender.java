@@ -12,8 +12,11 @@ public class ThreadedMessageSender extends Thread {
 	
 	private BufferedWriter writer;
 	
+	private Network network;
+	
 	public ThreadedMessageSender(Network network) throws IOException {
 		super ("Msg Sender: " + network.getName());
+		this.network = network;
 		writer = new BufferedWriter(new OutputStreamWriter(network.getSocketOStream()));
 	}
 	
@@ -22,8 +25,13 @@ public class ThreadedMessageSender extends Thread {
 		isRunning = true;
 		
 		while (isRunning) {
-			
+			while (network.hasMessage()) {
+				try {
+					writer.write(network.sendMessage().toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
-
 }
