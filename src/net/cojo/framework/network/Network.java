@@ -6,21 +6,27 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import net.cojo.framework.backend.EnumMessageType;
 import net.cojo.framework.backend.Message;
-import net.cojo.framework.backend.MessageDispatcher;
+import net.cojo.framework.backend.MessageDispatchManager;
+import net.cojo.framework.user.User;
 import net.cojo.framework.user.UserData;
 
 public class Network {
 
-	/** User data instance */
-	private UserData userData;
+	/** User associated with this network */
+	private User user;
 	
 	/** Socket that connects to the proper host/port */
 	private Socket socket;
 	
-	public Network(UserData userData) throws UnknownHostException, IOException {
-		this.userData = userData;
-		this.socket = new Socket(userData.getHostname(), userData.getPort());
+	private Network(User user) throws UnknownHostException, IOException {
+		this.user = user;
+		this.socket = new Socket(user.getUserData().getHostname(), user.getUserData().getPort());
+	}
+	
+	public static Network createNetwork(User user) throws UnknownHostException, IOException {
+		return new Network(user);
 	}
 	
 	public OutputStream getSocketOStream() throws IOException {
@@ -35,7 +41,7 @@ public class Network {
 	 * @return UserData instance
 	 */
 	public UserData getUserData() {
-		return this.userData;
+		return this.user.getUserData();
 	}
 	
 	/**
@@ -43,7 +49,7 @@ public class Network {
 	 * @return Name of the network to display
 	 */
 	public String getName() {
-		return this.userData.getLocalName();
+		return this.user.getUserData().getLocalName();
 	}
 	
 	/**
@@ -52,7 +58,7 @@ public class Network {
 	 * @return Whether the message was successfully added to the map
 	 */
 	public boolean addOutboundMessage(Message msg) {
-		return MessageDispatcher.outboundMessageMap.get(getName()).offer(msg);
+		return MessageDispatchManager.outboundMessageMap.get(getName()).offer(msg);
 	}
 	
 	/**
@@ -61,30 +67,42 @@ public class Network {
 	 * @return Whether the message was successfully added to the map
 	 */
 	public boolean addInboundMessage(Message msg) {
-		return MessageDispatcher.inboundMessageMap.get(getName()).offer(msg);
+		return MessageDispatchManager.inboundMessageMap.get(getName()).offer(msg);
 	}
 	
 	/**
 	 * Are there any messages left to go outbound?
 	 * @return Is there anything in the outbound message queue?
 	 */
-	public boolean hasMessage() {
-		return !MessageDispatcher.outboundMessageMap.get(getName()).isEmpty();
+	public boolean hasMessageToSend() {
+		return !MessageDispatchManager.outboundMessageMap.get(getName()).isEmpty();
+	}
+	
+	/**
+	 * Are there any messages left to be processed?
+	 * @return Is there anything left in the to-be-processed message queue?
+	 */
+	public boolean hasMessageToProcess() {
+		return !MessageDispatchManager.inboundMessageMap.get(getName()).isEmpty();
 	}
 	
 	/**
 	 * Peek at the next message to be sent
 	 * @return The next message to be sent if there is one, null otherwise
 	 */
-	public Message peek() {
-		return hasMessage() ? MessageDispatcher.outboundMessageMap.get(getName()).peek() : null;
+	public Message peek(EnumMessageType type) {
+		return hasMessageToSend() ? MessageDispatchManager.outboundMessageMap.get(getName()).peek() : null;
 	}
 	
 	/**
 	 * Poll the next message to be sent
 	 * @return The next message to be sent if there is one, null otherwise
 	 */
-	public Message sendMessage() {
-		return hasMessage() ? MessageDispatcher.outboundMessageMap.get(getName()).poll() : null;
+	public Message poll(EnumMessageType type) {
+		return hasMessageToSend() ? MessageDispatchManager.outboundMessageMap.get(getName()).poll() : null;
+	}
+	
+	public void processMessage(Message msg) {
+		this.user.processMessage(msg);
 	}
 }

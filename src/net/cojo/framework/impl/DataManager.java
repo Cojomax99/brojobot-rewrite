@@ -2,7 +2,11 @@ package net.cojo.framework.impl;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.net.UnknownHostException;
 
+import net.cojo.framework.network.Network;
+import net.cojo.framework.user.User;
 import net.cojo.framework.user.UserData;
 import net.cojo.framework.user.UserManager;
 
@@ -39,7 +43,7 @@ public class DataManager {
 	 * Load the user info from the JSON file
 	 * @param fileName Name of the file to load from
 	 */
-	public static void loadUserData (String fileName) {
+	public void loadUserData (String fileName) {
 		try {
 			JsonReader reader = new JsonReader(new FileReader(fileName));
 			JsonParser parser = new JsonParser();
@@ -47,9 +51,11 @@ public class DataManager {
 
 			for (JsonElement elem : array) {
 				UserData info = gson.fromJson(elem, UserData.class);
-				UserManager.userMap.put(info.getLocalName(), info);
+				User user = new User(info);
+				UserManager.userMap.put(info.getLocalName(), user);
+				UserManager.networkMap.put(user, Network.createNetwork(user));
 			}
-		} catch (FileNotFoundException fnfe) {
+		} catch (IOException ioe) {
 			System.err.println("Could not find or use file " + fileName + " !");
 		}
 	}
