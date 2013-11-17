@@ -21,13 +21,13 @@ public class BrojoBot {
 	private ThreadedMessageProcessor processor;
 	
 	public BrojoBot() throws IOException {
-		receiver = new ThreadedMessageReceiver(UserManager.networkMap.get("brojo"));
-		sender = new ThreadedMessageSender(UserManager.networkMap.get("brojo"));
-		processor = new ThreadedMessageProcessor(UserManager.networkMap.get("brojo"));
+		receiver = new ThreadedMessageReceiver(UserManager.networkMap.get(UserManager.userMap.get("brojo")));
+		sender = new ThreadedMessageSender(UserManager.networkMap.get(UserManager.userMap.get("brojo")));
+		processor = new ThreadedMessageProcessor(UserManager.networkMap.get(UserManager.userMap.get("brojo")));
 		
 		receiver.start();
-		sender.start();
 		processor.start();
+		sender.start();
 	}
 
 	public static void main(String[] args) throws IOException {

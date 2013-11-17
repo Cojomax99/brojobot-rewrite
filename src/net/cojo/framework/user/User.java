@@ -13,10 +13,14 @@ public class User {
 	
 	public User(UserData data) {
 		this.userData = data;
-		network = UserManager.networkMap.get(this);
+	}
+	
+	public void setNetwork(Network network) {
+		this.network = network;
 	}
 	
 	public void processMessage(Message msg) {
+		network = UserManager.networkMap.get(this);
 		if (msg.getContents().startsWith("PING :")) {
 			network.addOutboundMessage(Message.createClientMessage(null, String.format("PONG %s", msg.getContents().substring(6))));
 		} else

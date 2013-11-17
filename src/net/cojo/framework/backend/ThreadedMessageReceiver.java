@@ -17,6 +17,7 @@ public class ThreadedMessageReceiver extends Thread {
 
 	public ThreadedMessageReceiver(Network network) throws IOException {
 		super ("Msg Receiver: " + network.getName());
+		this.network = network;
 		reader = new BufferedReader(new InputStreamReader(network.getSocketIStream(), "UTF8"));
 	}
 
@@ -29,7 +30,7 @@ public class ThreadedMessageReceiver extends Thread {
 				Thread.sleep(5L);
 				StringBuilder line = null;
 				while ((line = new StringBuilder(reader.readLine())) != null) {
-					network.addInboundMessage(Message.createMessageFromRaw(line.toString()));
+					network.addInboundMessage(Message.createClientMessage(null, line.toString()));
 				}
 			} catch (IOException | InterruptedException e) {
 				e.printStackTrace();

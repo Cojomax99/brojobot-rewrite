@@ -22,6 +22,7 @@ public class Network {
 	
 	private Network(User user) throws UnknownHostException, IOException {
 		this.user = user;
+		user.setNetwork(this);
 		this.socket = new Socket(user.getUserData().getHostname(), user.getUserData().getPort());
 	}
 	
@@ -75,7 +76,7 @@ public class Network {
 	 * @return Is there anything in the outbound message queue?
 	 */
 	public boolean hasMessageToSend() {
-		return !MessageDispatchManager.outboundMessageMap.get(getName()).isEmpty();
+		return MessageDispatchManager.outboundMessageMap.get(getName()) != null || !MessageDispatchManager.outboundMessageMap.get(getName()).isEmpty();
 	}
 	
 	/**
@@ -83,7 +84,7 @@ public class Network {
 	 * @return Is there anything left in the to-be-processed message queue?
 	 */
 	public boolean hasMessageToProcess() {
-		return !MessageDispatchManager.inboundMessageMap.get(getName()).isEmpty();
+		return MessageDispatchManager.inboundMessageMap.get(getName()) != null || !MessageDispatchManager.inboundMessageMap.get(getName()).isEmpty();
 	}
 	
 	/**
@@ -99,7 +100,14 @@ public class Network {
 	 * @return The next message to be sent if there is one, null otherwise
 	 */
 	public Message poll(EnumMessageType type) {
-		return hasMessageToSend() ? MessageDispatchManager.outboundMessageMap.get(getName()).poll() : null;
+		switch(type) {
+		case PROCESS:
+			return hasMessageToProcess() ? MessageDispatchManager.inboundMessageMap.get(getName()).poll() : null;
+		case SEND:
+			return hasMessageToSend() ? MessageDispatchManager.outboundMessageMap.get(getName()).poll() : null;
+		}
+		
+		return null;
 	}
 	
 	public void processMessage(Message msg) {

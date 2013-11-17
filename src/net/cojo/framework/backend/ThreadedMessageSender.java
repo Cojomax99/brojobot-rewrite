@@ -27,8 +27,8 @@ public class ThreadedMessageSender extends Thread {
 
 			while (isRunning) {
 				Thread.sleep(5L);
-				while (network.hasMessageToSend()) {
-					writer.write(network.poll(EnumMessageType.SEND).toString());
+				if (network.hasMessageToSend()) {
+					writer.write(network.poll(EnumMessageType.SEND).toString() + "\r\n");
 				}
 			}
 		} catch (IOException | InterruptedException e) {
